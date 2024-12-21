@@ -1,0 +1,122 @@
+<style type="text/css" >
+.hidden_slot {
+    display: none !important;
+}
+
+@media screen and (min-width: 768px) {
+    .widgets-step-1 > .no-slots-message {
+        display: none;
+    }
+   .widgets-slot-block > .no-slots-message {
+        display: block;
+    }
+}
+
+@media screen and (max-width: 768px) {
+    .widgets-slot-block > .no-slots-message {
+        display: none;
+    }
+    .widgets-step-1 > .no-slots-message {
+        display: block;
+    }
+}
+  
+.widgets-slot-block > .no-slots-message {
+    padding-right: 15px;
+}
+
+.widgets-slot-block.disable-slots .no-slots-message {
+    display: none !important;
+}
+
+</style>
+<script type="text/javascript">
+//document.addEventListener("DOMContentLoaded", function() {
+    // Function to check if a given time string falls between 11:00 PM and 6:00 AM
+function isNightTime(timeString) {
+    // Extract hours and minutes from the time string
+    var timeComponents = timeString.split(":");
+    var hours = parseInt(timeComponents[0]);
+    var minutes = parseInt(timeComponents[1]);
+
+    // Extract AM/PM indicator
+    var indicator = timeString.slice(-2);
+
+    if (hours >= 8 && hours < 12 && indicator === "PM") {
+        return "night";
+    } else if ((hours <= 6 && indicator === "AM") || (hours === 12 && indicator === "AM")) {
+        return "hide";
+    }
+
+    return "show";
+}
+
+// Function to add the moon emoji to night time slots
+function addMoonEmoji() {
+    // Remove existing moon emojis
+    document.querySelectorAll('.night-emoji').forEach(function(emoji) {
+        emoji.remove();
+    });
+
+    // Select all time slot spans
+    var timeSlots = document.querySelectorAll('.widgets-time-slot span');
+    var allSlots = document.querySelectorAll('.widgets-time-slot');
+   
+    allSlots.forEach(function(slot) {
+        slot.classList.remove('hidden_slot');
+    });
+    // Loop through each time slot
+    timeSlots.forEach(function(timeSlot) {
+        var timeString = timeSlot.textContent.trim(); // Extract time part
+        // Check if it's night time and emoji hasn't been added yet
+        var nightStatus = isNightTime(timeString);
+        if (nightStatus === "night" && !timeSlot.querySelector('.night-emoji')) {
+            var moonEmoji = document.createElement('span');
+            moonEmoji.className = 'night-emoji';
+            moonEmoji.textContent = '🌙';
+            timeSlot.appendChild(moonEmoji);
+        } else if (nightStatus === "hide" && !timeSlot.parentNode.classList.contains("hidden_slot")) {
+            // Add a CSS class to the parent node
+            timeSlot.parentNode.classList.add("hidden_slot");
+        }
+    });
+}
+
+// Function to check and display the message if no time slots are visible
+function checkAndDisplayMessage() {
+    var visibleSlots = document.querySelectorAll('.widgets-time-slot:not(.hidden_slot)');
+    var noSlotsContainer = document.querySelector('.no-slots-container');
+    var messageElement = document.querySelector('.widgets-step-1 > .no-slots-message');
+    var messageElementDesktop = document.querySelector('.widgets-slot-block > .no-slots-message');
+
+    if (!noSlotsContainer && visibleSlots.length === 0 && document.querySelector('.widgets-slot-block')) {
+        if (!messageElement) {
+            messageElement = document.createElement('div');
+            messageElement.className = 'no-slots-message';
+            messageElement.textContent = 'Unfortunately the schedules on this day are sold out, please return to the previous page to select another day';
+            document.querySelector('.widgets-step-1').appendChild(messageElement);
+        }
+        if (!messageElementDesktop) {
+            messageElementDesktop = document.createElement('div');
+            messageElementDesktop.className = 'no-slots-message';
+            messageElementDesktop.textContent = 'Unfortunately the schedules on this day are sold out, please select another day';
+            document.querySelector('.widgets-slot-block').appendChild(messageElementDesktop);
+        }
+    } else {
+        if (messageElement) {
+            messageElement.remove();
+        }
+        if (messageElementDesktop) {
+            messageElementDesktop.remove();
+        }
+    }
+}
+
+// Periodically check for the presence of time slots and add emoji
+var intervalId = setInterval(function() {
+    addMoonEmoji();
+    checkAndDisplayMessage();
+}, 1000); // Check every second
+
+//});
+</script>
